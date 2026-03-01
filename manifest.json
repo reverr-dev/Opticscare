@@ -1,11 +1,11 @@
 {
-  "name": "OptiCare — Eyewear Manager",
-  "short_name": "OptiCare",
+  "name": "Eye Glass Optics",
+  "short_name": "EGOptics",
   "description": "Eyewear shop management — billing, customers, stock",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b1120",
-  "theme_color": "#0b1120",
+  "theme_color": "#1a8fe3",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Eye Glass Optics</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a8fe3" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Eye Glass Optics" />
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" /> -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:       #fff;
+      --textfinalcolor: #000;
+      /* 0a0f1e */
+      --surf:     #0d1525;
+      --surf2:    #111e33;
+      --border:   #1a2f4a;
+      --border2:  #1f3d62;
+      --accent:   #1a8fe3;
+      --accent-d: #1265a8;
+      --violet:   #5bb8f5;
+      --green:    #4ade80;
+      --red:      #f87171;
+      --amber:    #fbbf24;
+      --wa:       #25D366;
+      --text:     #e2eaf5;
+      --muted:    #4d6480;
+      --muted2:   #7a95b0;
+      --head:     'Bebas Neue', sans-serif;
+      --body:     'Poppins', sans-serif;
+      --r:        14px;
+      --r-lg:     20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body { background: var(--bg); color: var(--accent); font-family: var(--body); font-size: 14px; min-height: 100vh; overflow-x: hidden; }
+
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* ─── LOADER ─── */
+    #loader {
+      position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity .4s;
+    }
+    .loader-eye {
+      width: 56px; height: 56px; position: relative;
+    }
+    .loader-eye svg { animation: blink 1.8s ease-in-out infinite; }
+    @keyframes blink {
+      0%,100% { transform: scaleY(1); }
+      45%,55% { transform: scaleY(0.1); }
+    }
+    #loader p { margin-top: 18px; font-family: var(--head); font-size: 11px; letter-spacing: 3px; color: var(--muted2); text-transform: uppercase; }
+
+    /* ─── SETUP ─── */
+    #setup {
+      display: none; position: fixed; inset: 0; background: var(--bg);
+      z-index: 999; overflow-y: auto; padding: 28px 16px 48px;
+    }
+    .setup-wrap { max-width: 460px; margin: 0 auto; }
+    .setup-logo { font-family: var(--head); font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+    .setup-sub { font-size: 13px; color: var(--muted2); margin-bottom: 32px; }
+    .step { display: none; }
+    .step.on { display: block; animation: fadeUp .25s ease; }
+    .step-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── APP SHELL ─── */
+    #app { display: none; min-height: 100vh; }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(247, 247, 247, 0.97); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .t-logo { font-family: var(--head); font-size: 17px; font-weight: 800; color: var(--accent); }
+    .branch-chip {
+      background: var(--surf2); border: 1px solid var(--border2);
+      border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600;
+      color: var(--violet); cursor: pointer; transition: all .18s; user-select: none;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .branch-chip:active { transform: scale(.96); }
+    .branch-chip svg { width: 10px; height: 10px; fill: var(--violet); }
+    .fb-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: var(--muted2);
+    }
+    .fb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 2.5s ease-in-out infinite; }
+    .fb-dot.off { background: var(--red); animation: none; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(247, 247, 247, 0.97); backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex; padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    }
+    .bnav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 3px; padding: 6px 4px; border: none; background: transparent;
+      color: var(--muted); font-family: var(--body); font-size: 10px; font-weight: 500;
+      cursor: pointer; border-radius: 10px; transition: all .18s;
+    }
+    .bnav-btn .icon { font-size: 20px; line-height: 1; transition: transform .18s; }
+    .bnav-btn.on { color: var(--accent); }
+    .bnav-btn.on .icon { transform: scale(1.15); }
+    .bnav-btn:active { transform: scale(.93); }
+
+    /* ─── PAGES ─── */
+    .page { display: none; padding: 16px 14px calc(80px + env(safe-area-inset-bottom)); max-width: 680px; margin: 0 auto; }
+    .page.on { display: block; animation: fadeUp .22s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+
+    /* ─── TYPOGRAPHY ─── */
+    .page-title { font-family: var(--head); font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+    .section-title { font-family: var(--head); font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+
+    /* ─── CARDS ─── */
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 16px; margin-bottom: 12px; }
+    .card-sm { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; margin-bottom: 10px; }
+
+    /* ─── FORM ─── */
+    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 11px; }
+    .fg label { font-size: 11px; font-weight: 600; color: var(--textfinalcolor); text-transform: uppercase; letter-spacing: .5px; }
+    .fg input, .fg select, .fg textarea {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 11px 13px; color: var(--accent);
+      font-family: var(--body); font-size: 14px; outline: none;
+      transition: border-color .18s; width: 100%;
+    }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); }
+    .fg select option { background: var(--surf2); }
+    .fg textarea { resize: vertical; min-height: 68px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    /* ─── RX TABLE ─── */
+    .rx-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 12px; }
+    .rx-tbl { width: 100%; border-collapse: collapse; min-width: 360px; }
+    .rx-tbl th { font-size: 10px; font-weight: 700; color: var(--textfinalcolor); text-transform: uppercase; letter-spacing: .5px; padding: 6px 6px; text-align: center; background: var(--bg); }
+    .rx-tbl th:first-child { border-radius: 8px 0 0 8px; text-align: left; padding-left: 10px; }
+    .rx-tbl th:last-child { border-radius: 0 8px 8px 0; }
+    .rx-tbl td { padding: 3px; }
+    .rx-tbl td input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 4px; color: var(--textfinalcolor);
+      font-size: 13px; font-family: var(--body); outline: none; text-align: center;
+      transition: border-color .15s;
+    }
+    .rx-tbl td input:focus { border-color: var(--accent); }
+    .rx-tbl td:first-child input {
+      font-weight: 700; color: var(--violet); background: transparent;
+      border: none; text-align: left; padding-left: 10px; cursor: default;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      padding: 12px 18px; border-radius: var(--r); border: none;
+      font-family: var(--body); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn-accent  { background: var(--accent); color: #080e1a; }
+    .btn-accent:hover  { background: #67e8f9; }
+    .btn-ghost   { background: var(--surf2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover   { border-color: var(--border2); }
+    .btn-green   { background: var(--green); color: #080e1a; }
+    .btn-red     { background: rgba(248,113,113,.12); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
+    .btn-wa      { background: var(--wa); color: #fff; font-weight: 700; }
+    .btn-wa:hover      { background: #1db954; }
+    .btn-sm   { padding: 7px 13px; font-size: 12px; border-radius: 9px; }
+    .btn-full { width: 100%; }
+
+    /* ─── WA BILL MODAL ─── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(6px); z-index: 500; align-items: flex-end; justify-content: center; padding: 0; }
+    .overlay.on { display: flex; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .sheet {
+      background: var(--surf); border: 1px solid var(--border);
+      border-radius: 24px 24px 0 0; padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+      width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto;
+      animation: slideUp .28s cubic-bezier(.32,.72,0,1);
+    }
+    @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+    .sheet-title { font-family: var(--head); font-size: 18px; font-weight: 800; margin-bottom: 16px; }
+
+    /* WhatsApp message preview */
+    .wa-preview {
+      background: #0d1f0f; border: 1px solid #1a3d1d;
+      border-radius: 14px; padding: 16px; margin-bottom: 16px;
+      font-family: 'Courier New', monospace; font-size: 12.5px;
+      color: #c8e6c9; line-height: 1.7; white-space: pre-wrap;
+      word-break: break-word; max-height: 300px; overflow-y: auto;
+    }
+    .wa-preview::-webkit-scrollbar { width: 3px; }
+    .wa-preview::-webkit-scrollbar-thumb { background: #1a3d1d; }
+
+    /* ─── MODAL (centre) ─── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(5px); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.on { display: flex; animation: fadeIn .2s ease; }
+    .modal { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px 20px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-family: var(--head); font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+
+    /* ─── BADGES ─── */
+    .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+    .b-green  { background: rgba(74,222,128,.12); color: var(--green); }
+    .b-red    { background: rgba(248,113,113,.12); color: var(--red); }
+    .b-amber  { background: rgba(251,191,36,.12);  color: var(--amber); }
+    .b-cyan   { background: rgba(34,211,238,.12);  color: var(--accent); }
+    .b-violet { background: rgba(167,139,250,.12); color: var(--violet); }
+
+    /* ─── KPI ─── */
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .kpi { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 14px; }
+    .kpi.hi { border-color: var(--accent-d); }
+    .kpi-lbl { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .kpi-val { font-family: var(--head); font-size: 28px; font-weight: 800; line-height: 1; }
+    .kpi-val.c-accent { color: var(--accent); }
+    .kpi-val.c-green  { color: var(--green); }
+    .kpi-val.c-red    { color: var(--red); }
+    .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ─── TABLE ─── */
+    .tbl { width: 100%; border-collapse: collapse; }
+    .tbl th { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    .tbl td { padding: 11px 10px; font-size: 13px; border-bottom: 1px solid rgba(28,45,71,.5); vertical-align: middle; }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tr:hover td { background: rgba(34,211,238,.03); }
+
+    /* ─── SEARCH ─── */
+    .search { background: var(--bg); border: 1px solid var(--border); border-radius: 50px; padding: 10px 16px; width: 100%; color: var(--textfinalcolor); font-family: var(--body); font-size: 14px; outline: none; margin-bottom: 14px; }
+    .search:focus { border-color: var(--accent); }
+
+    /* ─── ALERT ─── */
+    .alert-red { background: rgba(248,113,113,.07); border: 1px solid rgba(248,113,113,.2); border-radius: var(--r); padding: 11px 14px; font-size: 13px; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .alert-cyan { background: rgba(34,211,238,.06); border: 1px solid rgba(34,211,238,.18); border-radius: var(--r); padding: 11px 14px; font-size: 13px; color: var(--accent); margin-bottom: 12px; line-height: 1.6; }
+
+    /* ─── EMPTY STATE ─── */
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .empty .e-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+    .empty p { font-size: 13px; }
+
+    /* ─── FOLLOW-UP CARD ─── */
+    .fu-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .fu-card .fc-name { font-weight: 700; font-size: 14px; }
+    .fu-card .fc-sub { font-size: 11px; color: var(--muted2); margin-top: 2px; }
+
+    /* ─── ITEM ROW ─── */
+    .item-row { display: grid; grid-template-columns: 1fr 52px 72px 30px; gap: 7px; margin-bottom: 7px; align-items: center; }
+    .item-row input {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+      padding: 9px 8px; color: var(--textfinalcolor); font-family: var(--body); font-size: 13px;
+      outline: none; width: 100%; text-align: center; transition: border-color .15s;
+    }
+    .item-row input:first-child { text-align: left; padding-left: 11px; }
+    .item-row input:focus { border-color: var(--accent); }
+    .del-btn { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.18); color: var(--red); border-radius: 8px; padding: 9px 6px; cursor: pointer; font-size: 13px; transition: all .15s; width: 100%; }
+    .del-btn:active { transform: scale(.9); }
+
+    /* ─── STOCK CARD ─── */
+    .stock-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 15px; margin-bottom: 10px; }
+    .stock-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
+    .stock-cell { background: var(--surf2); border-radius: 9px; padding: 8px; text-align: center; }
+    .stock-cell .sc-v { font-family: var(--head); font-size: 18px; font-weight: 800; }
+    .stock-cell .sc-l { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* ─── SETTINGS ─── */
+    .si { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); }
+    .si:last-child { border-bottom: none; }
+    .si-lbl { font-size: 14px; font-weight: 600; }
+    .si-sub { font-size: 11px; color: var(--muted2); margin-top: 2px; }
+
+    /* ─── TOAST ─── */
+    #toast-box { position: fixed; top: 68px; right: 12px; z-index: 9000; display: flex; flex-direction: column; gap: 7px; pointer-events: none; }
+    .toast { background: var(--surf2); border: 1px solid var(--border2); border-radius: 12px; padding: 11px 16px; font-size: 13px; font-weight: 500; max-width: 280px; display: flex; align-items: center; gap: 8px; animation: toastIn .25s ease; pointer-events: all; }
+    .toast.ok  { border-color: rgba(74,222,128,.4); color: var(--green); }
+    .toast.err { border-color: rgba(248,113,113,.4); color: var(--red); }
+    .toast.info{ border-color: rgba(34,211,238,.3); color: var(--accent); }
+    @keyframes toastIn { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
+
+    @media (max-width: 400px) {
+      .row2, .row3 { grid-template-columns: 1fr; }
+      .kpi-val { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── LOADER ─── -->
+<div id="loader">
+  <div class="loader-eye">
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+      <ellipse cx="28" cy="28" rx="26" ry="18" stroke="#1a2f4a" stroke-width="2.5"/>
+      <ellipse cx="28" cy="28" rx="26" ry="18" stroke="#1a8fe3" stroke-width="2" stroke-dasharray="48 80" stroke-dashoffset="0">
+        <animateTransform attributeName="transform" type="rotate" from="0 28 28" to="360 28 28" dur="2s" repeatCount="indefinite"/>
+      </ellipse>
+      <circle cx="28" cy="28" r="10" fill="#162035"/>
+      <circle cx="28" cy="28" r="7" fill="#1a8fe3" opacity=".9"/>
+      <circle cx="31" cy="25" r="2.5" fill="white" opacity=".6"/>
+    </svg>
+  </div>
+  <p>Eye Glass Optics</p>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div id="toast-box"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- SETUP SCREEN                         -->
+<!-- ════════════════════════════════════ -->
+<div id="setup">
+  <div class="setup-wrap">
+    <div class="setup-logo">👓 Eye Glass Optics</div>
+    <div class="setup-sub">One-time setup — takes 3 minutes</div>
+
+    <!-- Step 1 -->
+    <div class="step on" id="step-1">
+      <div class="step-label">Step 1 of 3 &nbsp;·&nbsp; Firebase Database</div>
+      <div class="alert-cyan" style="margin-bottom:16px;">
+        Firebase is a free Google service that stores your data safely in the cloud.
+        Follow the <strong>SETUP_GUIDE.md</strong> file included in this project to get your 3 keys. It takes about 10 minutes.
+      </div>
+      <div class="fg">
+        <label>Firebase API Key</label>
+        <input type="text" id="cfg-apiKey" placeholder="AIzaSy…" autocomplete="off" />
+      </div>
+      <div class="fg">
+        <label>Project ID</label>
+        <input type="text" id="cfg-projectId" placeholder="my-opticare-shop" autocomplete="off" />
+      </div>
+      <div class="fg" style="margin-bottom:20px;">
+        <label>App ID</label>
+        <input type="text" id="cfg-appId" placeholder="1:123456:web:abc…" autocomplete="off" />
+      </div>
+      <button class="btn btn-accent btn-full" onclick="goStep(2)">Next →</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step-2">
+      <div class="step-label">Step 2 of 3 &nbsp;·&nbsp; Shop Details</div>
+      <div class="fg">
+        <label>Shop Name *</label>
+        <input type="text" id="cfg-shopName" placeholder="Eye Glass Optics" />
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Branch 1 Name</label>
+          <input type="text" id="cfg-b1" placeholder="Virar East" />
+        </div>
+        <div class="fg">
+          <label>Branch 2 Name</label>
+          <input type="text" id="cfg-b2" placeholder="Market" />
+        </div>
+      </div>
+      <div class="fg">
+        <label>Shop WhatsApp Number</label>
+        <input type="tel" id="cfg-phone" placeholder="+91 917875074180" />
+      </div>
+      <div class="fg" style="margin-bottom:20px;">
+        <label>Address (shown in bill message)</label>
+        <textarea id="cfg-addr" placeholder="Shop No.4, Shree Sairaj Apt., Near Durga Medical, Jivdani Road, Virar (East) - 401305"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="goStep(1)" style="flex:1;">← Back</button>
+        <button class="btn btn-accent" onclick="goStep(3)" style="flex:2;">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step-3">
+      <div class="step-label">Step 3 of 3 &nbsp;·&nbsp; Done!</div>
+      <div style="text-align:center;padding:24px 0 28px;">
+        <div style="font-size:54px;margin-bottom:14px;">🎉</div>
+        <div style="font-family:var(--head);font-size:20px;font-weight:800;margin-bottom:8px;">You're all set!</div>
+        <div style="font-size:13px;color:var(--muted2);line-height:1.7;">
+          Open this page in Chrome → tap the menu (⋮) → <strong style="color:var(--text)">Add to Home screen</strong><br/>
+          It will work like a real app on your phone.
+        </div>
+      </div>
+      <button class="btn btn-green btn-full" onclick="finishSetup()">Open Eye Glass Optics →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- MAIN APP                             -->
+<!-- ════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="t-logo">👓 Eye Glass Optics</div>
+      <div class="branch-chip" onclick="flipBranch()" id="branchChip">
+        <svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>
+        <span id="branchLabel">Branch 1</span>
+      </div>
+    </div>
+    <div class="fb-pill">
+      <div class="fb-dot" id="fbDot"></div>
+      <span id="fbLabel">Live</span>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DASHBOARD ══ -->
+  <div class="page on" id="p-dash">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div class="page-title" style="margin:0;">Dashboard</div>
+      <div style="font-size:11px;color:var(--muted2);text-align:right;line-height:1.5;" id="dashDate"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi hi">
+        <div class="kpi-lbl">Today's Bills</div>
+        <div class="kpi-val c-accent" id="k-bills">0</div>
+        <div class="kpi-sub">this branch</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Today's Revenue</div>
+        <div class="kpi-val c-green" id="k-rev">₹0</div>
+        <div class="kpi-sub">all payments</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Total Customers</div>
+        <div class="kpi-val" id="k-custs">0</div>
+        <div class="kpi-sub">all time</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Low Stock</div>
+        <div class="kpi-val c-red" id="k-low">0</div>
+        <div class="kpi-sub">need reorder</div>
+      </div>
+    </div>
+
+    <div id="stockAlerts"></div>
+
+    <div class="card">
+      <div class="section-title">Recent Bills</div>
+      <div id="recentBills"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: NEW BILL ══ -->
+  <div class="page" id="p-bill">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="page-title" style="margin:0;">New Bill</div>
+      <button class="btn btn-ghost btn-sm" onclick="clearBill()">🗑 Clear</button>
+    </div>
+
+    <!-- Customer -->
+    <div class="card">
+      <div class="section-title">Customer</div>
+      <div class="row2">
+        <div class="fg">
+          <label>Customer Name *</label>
+          <input type="text" id="bName" placeholder="Full name" oninput="autofillCust(this.value)" />
+        </div>
+        <div class="fg">
+          <label>Phone *</label>
+          <input type="tel" id="bPhone" placeholder="10 digits" maxlength="10" />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Age</label>
+          <input type="number" id="bAge" placeholder="Age" min="1" max="120" />
+        </div>
+        <div class="fg">
+          <label>Bill Date</label>
+          <input type="date" id="bDate" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Prescription -->
+    <div class="card">
+      <div class="section-title">Eye Prescription (Rx)</div>
+      <div class="rx-wrap">
+        <table class="rx-tbl">
+          <thead>
+            <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>ADD</th><th>VA</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" value="Right (R)" readonly /></td>
+              <td><input type="text" id="rRsph" placeholder="+0.00" /></td>
+              <td><input type="text" id="rRcyl" placeholder="-0.00" /></td>
+              <td><input type="text" id="rRaxis" placeholder="0°" /></td>
+              <td><input type="text" id="rRadd" placeholder="0.00" /></td>
+              <td><input type="text" id="rRva" placeholder="6/6" /></td>
+            </tr>
+            <tr>
+              <td><input type="text" value="Left (L)" readonly /></td>
+              <td><input type="text" id="rLsph" placeholder="+0.00" /></td>
+              <td><input type="text" id="rLcyl" placeholder="-0.00" /></td>
+              <td><input type="text" id="rLaxis" placeholder="0°" /></td>
+              <td><input type="text" id="rLadd" placeholder="0.00" /></td>
+              <td><input type="text" id="rLva" placeholder="6/6" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fg">
+        <label>Prescribed by (Doctor name)</label>
+        <input type="text" id="bDoctor" placeholder="Dr. Sharma" />
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="card">
+      <div class="section-title">Items / Products</div>
+      <div style="display:grid;grid-template-columns:1fr 52px 72px 30px;gap:7px;margin-bottom:5px;padding:0 2px;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Description</div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;">Qty</div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:right;padding-right:4px;">₹ Rate</div>
+        <div></div>
+      </div>
+      <div id="itemsBox"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addItem()" style="margin-top:4px;">+ Add Item</button>
+    </div>
+
+    <!-- Payment -->
+    <div class="card">
+      <div class="section-title">Payment</div>
+      <div class="row2">
+        <div class="fg">
+          <label>Subtotal (₹)</label>
+          <input type="number" id="bSub" readonly style="color:var(--accent);font-weight:700;" />
+        </div>
+        <div class="fg">
+          <label>Discount (₹)</label>
+          <input type="number" id="bDisc" placeholder="0" value="0" oninput="calcTot()" />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Total Amount (₹)</label>
+          <input type="number" id="bTotal" readonly style="color:var(--green);font-weight:700;font-size:16px;" />
+        </div>
+        <div class="fg">
+          <label>Payment Mode</label>
+          <select id="bPay">
+            <option>Cash</option>
+            <option>UPI / GPay</option>
+            <option>PhonePe</option>
+            <option>Card</option>
+            <option>Partial (Cash+UPI)</option>
+            <option>Credit (Pending)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Delivery / Notes</label>
+        <textarea id="bNotes" placeholder="Ready date, special instructions…"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;padding-bottom:20px;">
+      <button class="btn btn-accent" onclick="saveBill()" style="flex:3;">💾 Save Bill</button>
+      <button class="btn btn-wa" onclick="waPreviewOnly()" style="flex:2;">💬 Preview WA</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: CUSTOMERS ══ -->
+  <div class="page" id="p-custs">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="page-title" style="margin:0;">Customers</div>
+      <span style="font-size:12px;color:var(--muted2);" id="custCount"></span>
+    </div>
+    <input type="text" class="search" id="custSearch" placeholder="🔍  Search name or phone…" oninput="renderCusts()" />
+    <div id="custList"></div>
+  </div>
+
+  <!-- ══ PAGE: STOCK ══ -->
+  <div class="page" id="p-stock">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="page-title" style="margin:0;">Stock</div>
+      <button class="btn btn-accent btn-sm" onclick="openStockModal()">+ Add Item</button>
+    </div>
+    <div id="stockList"></div>
+  </div>
+
+  <!-- ══ PAGE: FOLLOW-UP ══ -->
+  <div class="page" id="p-fu">
+    <div class="page-title">Follow-Up</div>
+    <div class="alert-cyan">
+      Customers who got glasses <strong>11–13 months ago</strong> are listed here.
+      Tap <strong>Remind</strong> to send them a WhatsApp reminder for their yearly eye checkup. 🎯
+    </div>
+    <div id="fuList"></div>
+  </div>
+
+  <!-- ══ PAGE: SETTINGS ══ -->
+  <div class="page" id="p-set">
+    <div class="page-title">Settings</div>
+
+    <div class="card">
+      <div class="section-title">Shop Info</div>
+      <div class="fg"><label>Shop Name</label><input type="text" id="sName" /></div>
+      <div class="row2">
+        <div class="fg"><label>Branch 1</label><input type="text" id="sB1" /></div>
+        <div class="fg"><label>Branch 2</label><input type="text" id="sB2" /></div>
+      </div>
+      <div class="fg"><label>WhatsApp / Phone</label><input type="tel" id="sPhone" /></div>
+      <div class="fg" style="margin-bottom:14px;"><label>Address</label><textarea id="sAddr"></textarea></div>
+      <button class="btn btn-accent btn-sm" onclick="saveSettings()">Save Changes</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Backup & Restore</div>
+      <div class="si">
+        <div><div class="si-lbl">Export Backup</div><div class="si-sub">Download JSON file to phone</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="exportData()">Export</button>
+      </div>
+      <div class="si">
+        <div><div class="si-lbl">Import / Restore</div><div class="si-sub">Restore from a backup file</div></div>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">Import<input type="file" accept=".json" onchange="importData(event)" style="display:none;" /></label>
+      </div>
+      <div class="si">
+        <div><div class="si-lbl">Send Backup to WhatsApp</div><div class="si-sub">Share summary to yourself</div></div>
+        <button class="btn btn-wa btn-sm" onclick="backupWA()">Share</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">About</div>
+      <p style="font-size:13px;color:var(--muted2);line-height:1.8;">
+        OptiCare v1.0 — Built for small optical shops.<br/>
+        Data stored securely in Firebase (free forever).<br/>
+        Works offline. Costs ₹0/month. ❤️
+      </p>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="bnav-btn on" onclick="nav('dash')" data-p="dash"><span class="icon">📊</span>Home</button>
+    <button class="bnav-btn" onclick="nav('bill')" data-p="bill"><span class="icon">🧾</span>New Bill</button>
+    <button class="bnav-btn" onclick="nav('custs')" data-p="custs"><span class="icon">👤</span>Customers</button>
+    <button class="bnav-btn" onclick="nav('stock')" data-p="stock"><span class="icon">📦</span>Stock</button>
+    <button class="bnav-btn" onclick="nav('fu')" data-p="fu"><span class="icon">🔔</span>Follow-Up</button>
+    <button class="bnav-btn" onclick="nav('set')" data-p="set"><span class="icon">⚙️</span>Settings</button>
+  </nav>
+
+</div><!-- #app -->
+
+<!-- ════════════════════════════════════ -->
+<!-- WHATSAPP BILL SHEET                  -->
+<!-- ════════════════════════════════════ -->
+<div class="overlay" id="waSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📱 WhatsApp Bill</div>
+    <div class="wa-preview" id="waPreviewText"></div>
+    <div style="margin-bottom:10px;font-size:12px;color:var(--muted2);">Send to customer's number:</div>
+    <div class="row2" style="margin-bottom:14px;">
+      <div class="fg" style="margin:0;">
+        <label>Customer Phone</label>
+        <input type="tel" id="waPhone" placeholder="10 digits" maxlength="10" />
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="btn btn-wa btn-full" onclick="sendWA()">Send on WhatsApp</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-full" onclick="closeSheet()">Close</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- CUSTOMER DETAIL MODAL                -->
+<!-- ════════════════════════════════════ -->
+<div class="modal-overlay" id="custModal">
+  <div class="modal">
+    <div class="modal-title" id="custModalTitle">Customer</div>
+    <div id="custModalBody"></div>
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;">
+      <button class="btn btn-wa btn-sm" onclick="waCust()" style="flex:1;">💬 WhatsApp</button>
+      <button class="btn btn-accent btn-sm" onclick="rebill()" style="flex:1;">+ New Bill</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="flex:1;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- ADD STOCK MODAL                      -->
+<!-- ════════════════════════════════════ -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal">
+    <div class="modal-title">Add Stock Item</div>
+    <div class="fg"><label>Item Name *</label><input type="text" id="stName" placeholder="e.g. CR39 Single Vision Lens" /></div>
+    <div class="row2">
+      <div class="fg">
+        <label>Category</label>
+        <select id="stCat">
+          <option>Lens – Single Vision</option>
+          <option>Lens – Bifocal</option>
+          <option>Lens – Progressive</option>
+          <option>Frame – Metal</option>
+          <option>Frame – Plastic</option>
+          <option>Frame – Kids</option>
+          <option>Sunglasses</option>
+          <option>Contact Lens</option>
+          <option>Accessories</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Unit</label>
+        <select id="stUnit">
+          <option>Pairs</option><option>Pieces</option><option>Boxes</option><option>Sets</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Current Qty</label><input type="number" id="stQty" placeholder="0" min="0" /></div>
+      <div class="fg"><label>Alert Below</label><input type="number" id="stMin" placeholder="5" min="0" /></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Cost Price (₹)</label><input type="number" id="stCost" placeholder="0" /></div>
+      <div class="fg"><label>Sell Price (₹)</label><input type="number" id="stSell" placeholder="0" /></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-ghost" onclick="closeModal()" style="flex:1;">Cancel</button>
+      <button class="btn btn-accent" onclick="saveStock()" style="flex:2;">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- FIREBASE + APP LOGIC                 -->
+<!-- ════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc,
+         updateDoc, deleteDoc, query, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── STATE ──────────────────────────────────────────────────────────────
+let db   = null;
+let CFG  = JSON.parse(localStorage.getItem('oc_cfg') || 'null');
+let BR   = localStorage.getItem('oc_br') || 'b1';
+let ITEMS = [{ desc:'', qty:1, rate:0 }];
+let CUSTS=[], BILLS=[], STOCK=[];
+let CUR_CUST_ID = null;
+let LAST_BILL   = null;
+
+// ── BOOT ───────────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  await sleep(1000);
+  fade('loader');
+  await sleep(450);
+  document.getElementById('loader').style.display = 'none';
+  CFG ? initFB() : showSetup();
+});
+
+function showSetup(){ document.getElementById('setup').style.display='block'; }
+
+function initFB(){
+  try {
+    const app = initializeApp({
+      apiKey:      CFG.apiKey,
+      authDomain:  `${CFG.projectId}.firebaseapp.com`,
+      projectId:   CFG.projectId,
+      storageBucket:`${CFG.projectId}.appspot.com`,
+      appId:       CFG.appId,
+    });
+    db = getFirestore(app);
+    setFBStatus(true);
+  } catch(e) {
+    setFBStatus(false);
+    toast('Firebase error — running offline', 'err');
+  }
+  launchApp();
+}
+
+function launchApp(){
+  document.getElementById('app').style.display='block';
+  document.getElementById('bDate').value = today();
+  loadSettings();
+  refreshAll();
+  document.getElementById('dashDate').textContent =
+    new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  renderItems();
+}
+
+// ── SETUP STEPS ────────────────────────────────────────────────────────
+window.goStep = function(n){
+  if(n===2){
+    const k=v('cfg-apiKey'), p=v('cfg-projectId'), a=v('cfg-appId');
+    if(!k||!p||!a){ toast('Fill all Firebase fields','err'); return; }
+    localStorage.setItem('oc_fb_tmp', JSON.stringify({apiKey:k,projectId:p,appId:a}));
+  }
+  if(n===3){
+    const sn=v('cfg-shopName');
+    if(!sn){ toast('Enter shop name','err'); return; }
+    const fb=JSON.parse(localStorage.getItem('oc_fb_tmp')||'{}');
+    CFG={...fb, shopName:sn,
+      b1: v('cfg-b1')||'Branch 1',
+      b2: v('cfg-b2')||'Branch 2',
+      phone: v('cfg-phone'),
+      addr:  v('cfg-addr'),
+    };
+    localStorage.setItem('oc_cfg', JSON.stringify(CFG));
+  }
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById(`step-${n}`).classList.add('on');
+};
+window.finishSetup = function(){
+  document.getElementById('setup').style.display='none';
+  document.getElementById('loader').style.display='flex';
+  document.getElementById('loader').style.opacity='1';
+  setTimeout(initFB, 700);
+};
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+const v    = id => document.getElementById(id)?.value?.trim()||'';
+const $    = id => document.getElementById(id);
+const sleep= ms => new Promise(r=>setTimeout(r,ms));
+const today= () => new Date().toISOString().split('T')[0];
+const fade = id => { const el=$(id); if(el) el.style.opacity='0'; };
+const brLabel = () => BR==='b1' ? (CFG?.b1||'Branch 1') : (CFG?.b2||'Branch 2');
+
+function setFBStatus(ok){
+  $('fbDot').classList.toggle('off',!ok);
+  $('fbLabel').textContent = ok ? 'Live' : 'Offline';
+}
+
+window.toast = function(msg, type='info'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span>${type==='ok'?'✓':type==='err'?'✗':'ℹ'}</span> ${msg}`;
+  $('toast-box').appendChild(el);
+  setTimeout(()=>el.remove(), 3400);
+};
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────
+window.nav = function(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
+  $(`p-${id}`).classList.add('on');
+  document.querySelector(`[data-p="${id}"]`).classList.add('on');
+  if(id==='custs')  renderCusts();
+  if(id==='stock')  renderStock();
+  if(id==='fu')     renderFU();
+  if(id==='dash')   renderDash();
+  if(id==='set')    loadSettings();
+};
+
+// ── BRANCH ─────────────────────────────────────────────────────────────
+window.flipBranch = function(){
+  BR = BR==='b1' ? 'b2' : 'b1';
+  localStorage.setItem('oc_br', BR);
+  $('branchLabel').textContent = brLabel();
+  refreshAll();
+  toast(`Switched to ${brLabel()}`, 'info');
+};
+
+// ── FIRESTORE CRUD ──────────────────────────────────────────────────────
+async function fbAdd(col, data){
+  if(!db) return localAdd(col, data);
+  try {
+    const r = await addDoc(collection(db,col), {...data, branch:BR, ts:serverTimestamp()});
+    return r.id;
+  } catch(e){ toast('Save failed: '+e.message,'err'); return null; }
+}
+async function fbAll(col){
+  if(!db) return localAll(col);
+  try {
+    const s = await getDocs(query(collection(db,col), where('branch','==',BR)));
+    return s.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return localAll(col); }
+}
+async function fbPatch(col, id, data){
+  if(!db){ localPatch(col,id,data); return; }
+  try { await updateDoc(doc(db,col,id), data); }
+  catch(e){ toast('Update failed','err'); }
+}
+async function fbDel(col, id){
+  if(!db){ localDel(col,id); return; }
+  try { await deleteDoc(doc(db,col,id)); }
+  catch(e){ toast('Delete failed','err'); }
+}
+
+// ── LOCAL FALLBACK ──────────────────────────────────────────────────────
+function lKey(col){ return `oc_local_${col}`; }
+function localAll(col){ return (JSON.parse(localStorage.getItem(lKey(col))||'[]')).filter(x=>x.branch===BR); }
+function localAdd(col,data){
+  const all=JSON.parse(localStorage.getItem(lKey(col))||'[]');
+  const item={id:Date.now().toString(),...data,branch:BR,ts:new Date().toISOString()};
+  all.push(item); localStorage.setItem(lKey(col),JSON.stringify(all)); return item.id;
+}
+function localPatch(col,id,data){
+  const all=JSON.parse(localStorage.getItem(lKey(col))||'[]');
+  const i=all.findIndex(x=>x.id===id); if(i>-1){all[i]={...all[i],...data}; localStorage.setItem(lKey(col),JSON.stringify(all));}
+}
+function localDel(col,id){
+  const all=JSON.parse(localStorage.getItem(lKey(col))||'[]').filter(x=>x.id!==id);
+  localStorage.setItem(lKey(col),JSON.stringify(all));
+}
+
+// ── REFRESH ─────────────────────────────────────────────────────────────
+async function refreshAll(){
+  [CUSTS, BILLS, STOCK] = await Promise.all([fbAll('customers'),fbAll('bills'),fbAll('stock')]);
+  renderDash();
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────
+function renderDash(){
+  const td = today();
+  const tb = BILLS.filter(b=>(b.date||'').startsWith(td));
+  const rev= tb.reduce((s,b)=>s+Number(b.total||0),0);
+  const low= STOCK.filter(s=>Number(s.qty)<=Number(s.minQty||5));
+
+  $('k-bills').textContent = tb.length;
+  $('k-rev').textContent   = '₹'+rev.toLocaleString('en-IN');
+  $('k-custs').textContent = CUSTS.length;
+  $('k-low').textContent   = low.length;
+
+  $('stockAlerts').innerHTML = low.map(s=>
+    `<div class="alert-red">⚠️ <strong>${s.name}</strong> — only ${s.qty} ${s.unit||'units'} left</div>`
+  ).join('');
+
+  const rec = [...BILLS].sort((a,b)=>new Date(b.ts||0)-new Date(a.ts||0)).slice(0,6);
+  $('recentBills').innerHTML = rec.length===0
+    ? `<div class="empty"><div class="e-icon">🧾</div><p>No bills yet today</p></div>`
+    : `<table class="tbl"><thead><tr><th>Customer</th><th>Total</th><th>Mode</th><th></th></tr></thead><tbody>
+      ${rec.map(b=>`<tr>
+        <td><div style="font-weight:600;font-size:13px;">${b.custName}</div><div style="font-size:10px;color:var(--muted2)">${b.billNo||''}</div></td>
+        <td style="color:var(--green);font-weight:700;">₹${Number(b.total).toLocaleString('en-IN')}</td>
+        <td><span class="badge b-cyan">${b.payMode||'Cash'}</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="viewBill('${b.id}')">💬</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+}
+
+// ── NEW BILL ──────────────────────────────────────────────────────────────
+window.addItem = function(){
+  ITEMS.push({desc:'',qty:1,rate:0}); renderItems();
+};
+function renderItems(){
+  $('itemsBox').innerHTML = ITEMS.map((it,i)=>`
+    <div class="item-row">
+      <input type="text"   placeholder="Item description" value="${it.desc}" onchange="upItem(${i},'desc',this.value)" />
+      <input type="number" placeholder="Qty" value="${it.qty}" min="1" onchange="upItem(${i},'qty',+this.value)" />
+      <input type="number" placeholder="₹" value="${it.rate||''}" onchange="upItem(${i},'rate',+this.value)" />
+      <button class="del-btn" onclick="delItem(${i})">✕</button>
+    </div>`).join('');
+  calcTot();
+}
+window.upItem = function(i,f,v){ ITEMS[i][f]=v; calcTot(); };
+window.delItem= function(i){ if(ITEMS.length>1){ITEMS.splice(i,1);renderItems();} };
+window.calcTot= function(){
+  const sub = ITEMS.reduce((s,it)=>s+(it.qty*it.rate),0);
+  const disc= Number($('bDisc')?.value||0);
+  if($('bSub'))  $('bSub').value  = sub;
+  if($('bTotal'))$('bTotal').value = sub-disc;
+};
+
+window.clearBill = function(){
+  ['bName','bPhone','bAge','bDoctor','bNotes'].forEach(id=>{if($(id))$(id).value='';});
+  ['rRsph','rRcyl','rRaxis','rRadd','rRva','rLsph','rLcyl','rLaxis','rLadd','rLva']
+    .forEach(id=>{if($(id))$(id).value='';});
+  if($('bDisc'))$('bDisc').value=0;
+  if($('bDate'))$('bDate').value=today();
+  ITEMS=[{desc:'',qty:1,rate:0}]; CUR_CUST_ID=null;
+  renderItems(); toast('Form cleared','info');
+};
+
+function buildBillObj(){
+  const name=v('bName'), phone=v('bPhone');
+  if(!name){ toast('Enter customer name','err'); return null; }
+  if(!phone||phone.length<10){ toast('Enter valid 10-digit phone','err'); return null; }
+  const filled=ITEMS.filter(it=>it.desc.trim()&&it.rate>0);
+  if(!filled.length){ toast('Add at least one item with price','err'); return null; }
+  return {
+    custName:name, phone, age:v('bAge'), date:v('bDate'), doctor:v('bDoctor'),
+    rx:{ R:{sph:v('rRsph'),cyl:v('rRcyl'),axis:v('rRaxis'),add:v('rRadd'),va:v('rRva')},
+         L:{sph:v('rLsph'),cyl:v('rLcyl'),axis:v('rLaxis'),add:v('rLadd'),va:v('rLva')} },
+    items:filled,
+    subtotal:Number($('bSub')?.value||0),
+    discount:Number($('bDisc')?.value||0),
+    total:   Number($('bTotal')?.value||0),
+    payMode: $('bPay')?.value||'Cash',
+    notes:   v('bNotes'),
+  };
+}
+
+window.saveBill = async function(){
+  const data=buildBillObj(); if(!data)return;
+
+  // upsert customer
+  let cid=CUR_CUST_ID;
+  const ex=CUSTS.find(c=>c.phone===data.phone);
+  if(ex){
+    cid=ex.id;
+    await fbPatch('customers',cid,{name:data.custName,lastVisit:data.date,rx:data.rx,doctor:data.doctor});
+  } else {
+    cid=await fbAdd('customers',{name:data.custName,phone:data.phone,age:data.age,
+      firstVisit:data.date,lastVisit:data.date,rx:data.rx,doctor:data.doctor});
+  }
+
+  const num=BILLS.length+1;
+  const billNo=`${BR.toUpperCase()}-${new Date().getFullYear()}-${String(num).padStart(4,'0')}`;
+  const bid=await fbAdd('bills',{...data,billNo,custId:cid});
+
+  if(bid){
+    toast('Bill saved!','ok');
+    LAST_BILL={...data,billNo,id:bid};
+    await refreshAll();
+    openWASheet(LAST_BILL);
+  }
+};
+
+// ── WHATSAPP BILL ──────────────────────────────────────────────────────
+function buildWAMsg(b){
+  const c=CFG||{};
+  const items=b.items.map(it=>`  • ${it.desc} ×${it.qty} = ₹${(it.qty*it.rate).toLocaleString('en-IN')}`).join('\n');
+  const rx=b.rx;
+  const hasRx=rx&&(rx.R?.sph||rx.R?.cyl||rx.L?.sph||rx.L?.cyl);
+  const rxBlock=hasRx ? `\n👁️ *Prescription (Rx):*\n` +
+    `  Right → SPH:${rx.R?.sph||'—'} CYL:${rx.R?.cyl||'—'} AXIS:${rx.R?.axis||'—'} ADD:${rx.R?.add||'—'}\n`+
+    `  Left  → SPH:${rx.L?.sph||'—'} CYL:${rx.L?.cyl||'—'} AXIS:${rx.L?.axis||'—'} ADD:${rx.L?.add||'—'}\n` : '';
+  return `👓 *${c.shopName||'👓 Eye Glass Optics'}* | ${brLabel()}
+━━━━━━━━━━━━━━━━━━━━
+📋 *Bill No:* ${b.billNo}
+📅 *Date:* ${b.date}
+👤 *Name:* ${b.custName}
+${b.doctor ? `💊 *Dr:* ${b.doctor}\n` : ''}${rxBlock}
+🛍️ *Items:*
+${items}
+━━━━━━━━━━━━━━━━━━━━
+${b.discount>0?`💸 Discount: -₹${b.discount}\n`:''}💰 *Total: ₹${Number(b.total).toLocaleString('en-IN')}*
+💳 Payment: ${b.payMode}
+${b.notes?`📝 ${b.notes}\n`:''}
+Thank you for visiting! 🙏
+Please come for your annual checkup next year.
+📞 ${c.phone||''} | ${c.addr||''}`;
+}
+
+function openWASheet(b){
+  $('waPreviewText').textContent = buildWAMsg(b);
+  $('waPhone').value = b.phone||'';
+  $('waSheet').classList.add('on');
+}
+
+window.waPreviewOnly = function(){
+  const data=buildBillObj(); if(!data)return;
+  LAST_BILL={...data,billNo:'PREVIEW'};
+  openWASheet(LAST_BILL);
+};
+
+window.sendWA = function(){
+  if(!LAST_BILL)return;
+  const ph=($('waPhone').value||'').replace(/\D/g,'');
+  const full=ph.length===10?'91'+ph:ph;
+  if(full.length<12){ toast('Enter valid phone number','err'); return; }
+  const msg=buildWAMsg(LAST_BILL);
+  window.open(`https://wa.me/${full}?text=${encodeURIComponent(msg)}`, '_blank');
+};
+
+window.viewBill = function(id){
+  const b=BILLS.find(x=>x.id===id); if(!b)return;
+  LAST_BILL=b; openWASheet(b);
+};
+
+window.closeSheet = function(){ $('waSheet').classList.remove('on'); };
+
+// ── CUSTOMERS ──────────────────────────────────────────────────────────
+window.renderCusts = function(){
+  const q=($('custSearch')?.value||'').toLowerCase();
+  const f=CUSTS.filter(c=>c.name?.toLowerCase().includes(q)||c.phone?.includes(q))
+    .sort((a,b)=>(b.lastVisit||'')>(a.lastVisit||'')?1:-1);
+  $('custCount').textContent=`${f.length} customers`;
+  $('custList').innerHTML = f.length===0
+    ? `<div class="empty"><div class="e-icon">👤</div><p>No customers found</p></div>`
+    : f.map(c=>`
+      <div class="card-sm" onclick="openCustModal('${c.id}')" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;font-size:14px;">${c.name}</div>
+            <div style="font-size:11px;color:var(--textfinalcolor);margin-top:3px;">📞 ${c.phone}${c.age?' · Age '+c.age:''}</div>
+            <div style="font-size:10px;color:var(--textfinalcolor);margin-top:2px;">Last: ${c.lastVisit||'—'}</div>
+          </div>
+          <div style="color:var(--muted2);font-size:20px;">›</div>
+        </div>
+      </div>`).join('');
+};
+
+window.openCustModal = function(id){
+  const c=CUSTS.find(x=>x.id===id); if(!c)return;
+  CUR_CUST_ID=id;
+  const rx=c.rx||{};
+  const cb=BILLS.filter(b=>b.custId===id||b.phone===c.phone);
+  $('custModalTitle').textContent=c.name;
+  const rxRow=(eye,d)=>d?`<tr><td>${eye}</td><td>${d.sph||'—'}</td><td>${d.cyl||'—'}</td><td>${d.axis||'—'}</td><td>${d.add||'—'}</td></tr>`:'';
+  $('custModalBody').innerHTML=`
+    <div style="font-size:13px;line-height:2.1;color:var(--muted2);">
+      📞 <strong style="color:var(--text)">${c.phone}</strong><br/>
+      ${c.age?`🎂 Age: <strong style="color:var(--text)">${c.age}</strong><br/>`:''}
+      📅 First visit: <strong style="color:var(--text)">${c.firstVisit||'—'}</strong><br/>
+      📅 Last visit: <strong style="color:var(--text)">${c.lastVisit||'—'}</strong>
+      ${c.doctor?`<br/>💊 Dr: <strong style="color:var(--text)">${c.doctor}</strong>`:''}
+    </div>
+    ${(rx.R||rx.L)?`
+    <div style="margin-top:12px;padding:12px;background:var(--surf2);border-radius:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">Last Prescription</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead><tr style="color:var(--muted2)"><th style="padding:3px 4px;text-align:left">Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>ADD</th></tr></thead>
+        <tbody>${rxRow('Right',rx.R)}${rxRow('Left',rx.L)}</tbody>
+      </table>
+    </div>` : ''}
+    <div style="margin-top:12px;font-size:12px;color:var(--muted2);">
+      Total bills: <strong style="color:var(--text)">${cb.length}</strong> · 
+      Total spent: <strong style="color:var(--green)">₹${cb.reduce((s,b)=>s+Number(b.total||0),0).toLocaleString('en-IN')}</strong>
+    </div>`;
+  $('custModal').classList.add('on');
+};
+
+window.waCust = function(){
+  const c=CUSTS.find(x=>x.id===CUR_CUST_ID); if(!c)return;
+  const ph=(c.phone||'').replace(/\D/g,'');
+  const full=ph.length===10?'91'+ph:ph;
+  window.open(`https://wa.me/${full}`,'_blank');
+  closeModal();
+};
+
+window.rebill = function(){
+  const c=CUSTS.find(x=>x.id===CUR_CUST_ID); if(!c)return;
+  closeModal();
+  clearBill();
+  if($('bName'))$('bName').value=c.name;
+  if($('bPhone'))$('bPhone').value=c.phone;
+  if($('bAge'))$('bAge').value=c.age||'';
+  if(c.rx){
+    ['sph','cyl','axis','add','va'].forEach(f=>{
+      if($(`rR${f}`))$(`rR${f}`).value=c.rx.R?.[f]||'';
+      if($(`rL${f}`))$(`rL${f}`).value=c.rx.L?.[f]||'';
+    });
+  }
+  CUR_CUST_ID=c.id;
+  nav('bill');
+  toast(`Loaded ${c.name}`, 'ok');
+};
+
+window.autofillCust = function(val){
+  if(val.length<2)return;
+  const m=CUSTS.find(c=>c.name.toLowerCase().startsWith(val.toLowerCase()));
+  if(m){
+    if($('bPhone'))$('bPhone').value=m.phone;
+    if($('bAge'))$('bAge').value=m.age||'';
+    if(m.rx){
+      ['sph','cyl','axis','add','va'].forEach(f=>{
+        if($(`rR${f}`))$(`rR${f}`).value=m.rx.R?.[f]||'';
+        if($(`rL${f}`))$(`rL${f}`).value=m.rx.L?.[f]||'';
+      });
+    }
+    CUR_CUST_ID=m.id;
+  }
+};
+
+// ── STOCK ──────────────────────────────────────────────────────────────
+function renderStock(){
+  $('stockList').innerHTML = STOCK.length===0
+    ? `<div class="empty"><div class="e-icon">📦</div><p>No stock items yet</p></div>`
+    : STOCK.map(s=>{
+      const low=Number(s.qty)<=Number(s.minQty||5);
+      return `<div class="stock-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-weight:700;font-size:14px;">${s.name}</div>
+            <div style="font-size:11px;color:var(--muted2);margin-top:2px;">${s.cat||'—'}</div>
+          </div>
+          <span class="badge ${low?'b-red':'b-green'}">${low?'Low Stock':'OK'}</span>
+        </div>
+        <div class="stock-meta">
+          <div class="stock-cell">
+            <div class="sc-v" style="color:${low?'var(--red)':'var(--text)'}">${s.qty}</div>
+            <div class="sc-l">In Stock (${s.unit||'units'})</div>
+          </div>
+          <div class="stock-cell">
+            <div class="sc-v" style="font-size:15px;">₹${s.costPrice||0}</div>
+            <div class="sc-l">Cost</div>
+          </div>
+          <div class="stock-cell">
+            <div class="sc-v" style="color:var(--green);font-size:15px;">₹${s.sellPrice||0}</div>
+            <div class="sc-l">Sell</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="adjStock('${s.id}',${s.qty},'${s.unit||'units'}')">Adjust</button>
+          <button class="btn btn-red btn-sm" onclick="delStock('${s.id}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+window.openStockModal = function(){
+  ['stName','stQty','stMin','stCost','stSell'].forEach(id=>{if($(id))$(id).value='';});
+  $('stockModal').classList.add('on');
+};
+window.saveStock = async function(){
+  const nm=v('stName'); if(!nm){toast('Enter item name','err');return;}
+  await fbAdd('stock',{name:nm,cat:v('stCat'),unit:v('stUnit'),
+    qty:+v('stQty')||0, minQty:+v('stMin')||5,
+    costPrice:+v('stCost')||0, sellPrice:+v('stSell')||0});
+  closeModal(); STOCK=await fbAll('stock'); renderStock(); toast('Item added!','ok');
+};
+window.adjStock = async function(id,cur,unit){
+  const nq=prompt(`Current: ${cur} ${unit}\nEnter new quantity:`);
+  if(nq===null||isNaN(nq))return;
+  await fbPatch('stock',id,{qty:+nq});
+  STOCK=await fbAll('stock'); renderStock(); renderDash(); toast('Stock updated','ok');
+};
+window.delStock = async function(id){
+  if(!confirm('Remove this item?'))return;
+  await fbDel('stock',id);
+  STOCK=await fbAll('stock'); renderStock(); toast('Removed','info');
+};
+
+// ── FOLLOW-UP ──────────────────────────────────────────────────────────
+function renderFU(){
+  const now=new Date();
+  const due=BILLS.filter(b=>{
+    if(!b.date)return false;
+    const m=(now-new Date(b.date))/(1000*60*60*24*30);
+    return m>=11&&m<=14;
+  });
+  const c=CFG||{};
+  $('fuList').innerHTML = due.length===0
+    ? `<div class="empty"><div class="e-icon">🎉</div><p>No follow-ups due right now.<br/>Check back next month.</p></div>`
+    : due.map(b=>{
+      const ph=(b.phone||'').replace(/\D/g,'');
+      const full=ph.length===10?'91'+ph:ph;
+      const msg=`Hello ${b.custName} 😊\n\nIt's been almost a year since your last eye checkup at *${c.shopName||'our shop'}*.\n\nWe recommend an annual eye exam to make sure your prescription is still correct.\n\n📅 Call us to book an appointment!\n📞 ${c.phone||''} | ${brLabel()}`;
+      return `<div class="fu-card">
+        <div>
+          <div class="fc-name">${b.custName}</div>
+          <div class="fc-sub">📞 ${b.phone} · Last visit: ${b.date}</div>
+        </div>
+        <a href="https://wa.me/${full}?text=${encodeURIComponent(msg)}" target="_blank">
+          <button class="btn btn-wa btn-sm">Remind 💬</button>
+        </a>
+      </div>`;
+    }).join('');
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────────────
+function loadSettings(){
+  const c=CFG||{};
+  if($('sName')) $('sName').value=c.shopName||'';
+  if($('sB1'))   $('sB1').value  =c.b1||'';
+  if($('sB2'))   $('sB2').value  =c.b2||'';
+  if($('sPhone'))$('sPhone').value=c.phone||'';
+  if($('sAddr')) $('sAddr').value =c.addr||'';
+  if($('branchLabel'))$('branchLabel').textContent=brLabel();
+}
+window.saveSettings = function(){
+  CFG={...CFG,shopName:v('sName'),b1:v('sB1'),b2:v('sB2'),phone:v('sPhone'),addr:v('sAddr')};
+  localStorage.setItem('oc_cfg',JSON.stringify(CFG));
+  if($('branchLabel'))$('branchLabel').textContent=brLabel();
+  toast('Settings saved!','ok');
+};
+
+// ── EXPORT / IMPORT ─────────────────────────────────────────────────────
+window.exportData = function(){
+  const data={customers:CUSTS,bills:BILLS,stock:STOCK,cfg:CFG,at:new Date().toISOString()};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=`opticare-backup-${today()}.json`; a.click();
+  toast('Backup downloaded!','ok');
+};
+window.importData = function(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.cfg){CFG=d.cfg;localStorage.setItem('oc_cfg',JSON.stringify(CFG));}
+      toast('Restored! Reload the page.','ok');
+    }catch{toast('Invalid file','err');}
+  };
+  r.readAsText(f);
+};
+window.backupWA = function(){
+  const c=CFG||{};
+  const msg=`📦 *Eye Glass Optics Backup*\n🏥 ${c.shopName||'Shop'}\n📅 ${new Date().toLocaleDateString('en-IN')}\n\n👥 Customers: ${CUSTS.length}\n🧾 Bills: ${BILLS.length}\n📦 Stock: ${STOCK.length} items\n\n_Please also export the full JSON backup from Settings._`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+};
+
+// ── MODAL HELPERS ────────────────────────────────────────────────────────
+window.closeModal = function(){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('on'));
+};
+// Close overlays on backdrop tap
+document.querySelectorAll('.overlay,.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el){ el.classList.remove('on'); } });
+});
+
+</script>
+</body>
+</html>
